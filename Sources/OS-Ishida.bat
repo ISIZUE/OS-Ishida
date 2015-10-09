@@ -1,0 +1,1 @@
+..\z_tools\nask.exe OS-Ishida.nas OS-Ishida.img
