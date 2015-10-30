@@ -1,39 +1,49 @@
+TOOLPATH = ../z_tools/
+MAKE     = $(TOOLPATH)make.exe -r
+NASK     = $(TOOLPATH)nask.exe
+EDIMG    = $(TOOLPATH)edimg.exe
+IMGTOL   = $(TOOLPATH)imgtol.com
+COPY     = copy
+DEL      = del
 
 # デフォルト動作
 
 default :
-	../z_tools/make.exe run
-
+	$(MAKE) run
 # ファイル生成規則
 
-OS-Ishida.bin : OS-Ishida.nas Makefile
-	../z_tools/nask.exe OS-Ishida.nas OS-Ishida.bin OS-Ishida.lst
+ipl.bin : ipl.nas Makefile
+	$(NASK) ipl.nas ipl.bin ipl.lst
 
-helloos.img : OS-Ishida.bin Makefile
-	../z_tools/edimg.exe   imgin:../z_tools/fdimg0at.tek \
-		wbinimg src:OS-Ishida.bin len:512 from:0 to:0   imgout:helloos.img
+haribote.sys : haribote.nas Makefile
+	$(NASK) haribote.nas haribote.sys haribote.lst
 
-#コマンド
+haribote.img : ipl.bin haribote.sys Makefile
+	$(EDIMG)   imgin:../z_tools/fdimg0at.tek \
+		wbinimg src:ipl.bin len:512 from:0 to:0 \
+		copy from:haribote.sys to:@: \
+		imgout:haribote.img
 
-asm :
-	../z_tools/make.exe -r OS-Ishida.bin
+# コマンド
 
 img :
-	../z_tools/make.exe -r helloos.img
+	$(MAKE) haribote.img
 
 run :
-	../z_tools/make.exe img
-	copy helloos.img ..\z_tools\qemu\fdimage0.bin
-	../z_tools/make.exe -C ../z_tools/qemu
+	$(MAKE) img
+	$(COPY) haribote.img ..\z_tools\qemu\fdimage0.bin
+	$(MAKE) -C ../z_tools/qemu
 
 install :
-	../z_tools/make.exe img
-	../z_tools/imgtol.com w a: helloos.img
+	$(MAKE) img
+	$(IMGTOL) w a: haribote.img
 
-lcean :
-	-del OS-Ishida.bin
-	-del OS-Ishida.lst
+clean :
+	-$(DEL) ipl.bin
+	-$(DEL) ipl.lst
+	-$(DEL) haribote.sys
+	-$(DEL) haribote.lst
 
 src_only :
-	../z_tools/make.exe clean
-	-del helloos.img
+	$(MAKE) clean
+	-$(DEL) haribote.img
